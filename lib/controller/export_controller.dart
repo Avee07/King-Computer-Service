@@ -39,11 +39,13 @@ class ExportController extends GetxController {
       DateTime firstDate = DateTime(year, month, 1);
       DateTime lastDate = DateTime(year, month + 1, 0); // Last day of month
 
-      // 🔍 Fetch latest Clients
+      // ✅ Fetch Clients & Create a Map for Fast Lookup
       var clientSnapshot = await _db.collection("clients").get();
-      var clients = clientSnapshot.docs.map((doc) => doc.data()).toList();
+      Map<String, dynamic> clientMap = {
+        for (var doc in clientSnapshot.docs) doc.id: doc.data()
+      };
 
-      // 🔍 Fetch latest Products within the selected month (including today)
+      // ✅ Fetch Products for Selected Month
       var productSnapshot = await _db
           .collection("products")
           .where("serviceDate",
@@ -51,11 +53,12 @@ class ExportController extends GetxController {
           .where("serviceDate", isLessThanOrEqualTo: lastDate.toIso8601String())
           .get();
       var products = productSnapshot.docs.map((doc) => doc.data()).toList();
-      // print(products);
+
       if (products.isEmpty) {
         Get.snackbar("No Data", "No products found for the selected month.");
         return;
       }
+
       // 📊 Create Excel
       var excel = Excel.createExcel();
       Sheet sheet = excel['Client Data'];
@@ -75,11 +78,16 @@ class ExportController extends GetxController {
 
       // 📌 Add Data Rows
       for (var product in products) {
-        var client = clients.firstWhere((c) => c['id'] == product['clientId'],
-            orElse: () => {"name": "Unknown", "phone": "", "address": ""});
+        String clientId = product['clientId'] ?? "UNKNOWN_ID";
+        var client = clientMap[clientId];
+
+        if (client == null) {
+          print("⚠ WARNING: No client found for clientId: $clientId");
+          client = {"name": "Unknown", "phone": "", "address": ""};
+        }
 
         sheet.appendRow([
-          TextCellValue(client["name"] ?? ""),
+          TextCellValue(client["name"] ?? "Unknown"),
           TextCellValue(client["phone"] ?? ""),
           TextCellValue(client["address"] ?? ""),
           TextCellValue(product["model"] ?? ""),
@@ -117,7 +125,7 @@ class ExportController extends GetxController {
         }
       }
     } catch (e) {
-      // print("Error exporting data: $e");
+      print("❌ Error exporting data: $e");
       Get.snackbar("Error", "Failed to export data.");
     } finally {
       isExporting.value = false;

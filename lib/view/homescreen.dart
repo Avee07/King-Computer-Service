@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Service Manager")),
+      appBar: AppBar(title: const Text("King Computer Service Manager")),
       body: LayoutBuilder(
         builder: (context, constraints) {
           double buttonSize = constraints.maxWidth > 600
@@ -129,15 +129,14 @@ class HomeScreen extends StatelessWidget {
       onConfirm: () {
         if (nameController.text.isNotEmpty && phoneController.text.isNotEmpty) {
           clientController.addClientWithProduct(
-            nameController.text,
-            phoneController.text,
-            addressController.text,
-            serialController.text,
-            modelController.text,
-            issueController.text,
-            // ✅ Default Status: 
-            "Registered"
-          );
+              nameController.text,
+              phoneController.text,
+              addressController.text,
+              serialController.text,
+              modelController.text,
+              issueController.text,
+              // ✅ Default Status:
+              "Registered");
           Get.back(); // Close dialog
         }
       },

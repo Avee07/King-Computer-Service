@@ -91,37 +91,57 @@ class ClientController extends GetxController {
   }
 
   // Add Client & Product Together and Send WhatsApp Message
+  // Add Client & Product Together and Send WhatsApp Message
   Future<void> addClientWithProduct(String name, String phone, String address,
       String serialNumber, String model, String issue, String status) async {
-    // Generate a new client ID
-    String clientId = _db.collection("clients").doc().id;
+    try {
+      // 🔍 Check if the client already exists
+      var clientQuery = await _db
+          .collection("clients")
+          .where("name", isEqualTo: name)
+          .where("phone", isEqualTo: phone)
+          .where("address", isEqualTo: address)
+          .get();
 
-    // Create Client Object
-    Client newClient =
-        Client(id: clientId, name: name, phone: phone, address: address);
+      String clientId;
 
-    // Create Product Object
-    Product newProduct = Product(
-      id: _db.collection("products").doc().id, // Auto-generate ID
-      clientId: clientId, // Link product to client
-      serialNumber: serialNumber,
-      model: model,
-      issue: issue,
-      status: status,
-      serviceDate: DateTime.now(),
-    );
+      if (clientQuery.docs.isNotEmpty) {
+        // ✅ Client already exists, use existing ID
+        clientId = clientQuery.docs.first.id;
+        print("🔄 Existing client found: $clientId");
+      } else {
+        // 🆕 New client, create a new ID
+        clientId = _db.collection("clients").doc().id;
+        Client newClient =
+            Client(id: clientId, name: name, phone: phone, address: address);
+        await _db.collection("clients").doc(clientId).set(newClient.toJson());
+        print("✅ New client created: $clientId");
+      }
 
-    // Store both in Firestore
-    await _db.collection("clients").doc(clientId).set(newClient.toJson());
-    await _db
-        .collection("products")
-        .doc(newProduct.id)
-        .set(newProduct.toJson());
+      // 🔹 Create Product Object
+      Product newProduct = Product(
+        id: _db.collection("products").doc().id, // Auto-generate ID
+        clientId: clientId, // Link product to existing or new client
+        serialNumber: serialNumber,
+        model: model,
+        issue: issue,
+        status: status,
+        serviceDate: DateTime.now(),
+      );
 
-    fetchClients(); // Refresh Client List
+      // 🔹 Store Product in Firestore
+      await _db
+          .collection("products")
+          .doc(newProduct.id)
+          .set(newProduct.toJson());
 
-    // Send WhatsApp Message
-    sendWhatsAppMessage(phone, name, model, serialNumber);
+      fetchClients(); // 🔄 Refresh Client List
+
+      // 📲 Send WhatsApp Message
+      sendWhatsAppMessage(phone, name, model, serialNumber);
+    } catch (e) {
+      print("❌ Error adding client & product: $e");
+    }
   }
 
   // Function to Send WhatsApp Message
@@ -146,9 +166,9 @@ class ClientController extends GetxController {
           await FlutterLaunch.launchWhatsapp(
               phone: "+91$phone", message: message);
         } catch (e) {
-            Get.snackbar(
+          Get.snackbar(
             "Error",
-           "WhatsApp message failed on Android: $e",
+            "WhatsApp message failed on Android: $e",
             snackPosition: SnackPosition.BOTTOM,
           );
           // print("WhatsApp message failed on Android: $e");
