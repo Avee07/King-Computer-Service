@@ -1,11 +1,8 @@
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:io' show File, Platform;
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html;
+import '../utils/file_saver.dart'; // ✅ Conditional Import
 
 class ExportController extends GetxController {
   var selectedMonth = DateTime.now().month.obs;
@@ -35,22 +32,22 @@ class ExportController extends GetxController {
       int month = selectedMonth.value;
       int year = selectedYear.value;
 
-      // 🔍 Get first and last date of selected month
       DateTime firstDate = DateTime(year, month, 1);
-      DateTime lastDate = DateTime(year, month + 1, 0); // Last day of month
+      DateTime lastDate = DateTime(year, month + 1, 0);
 
-      // ✅ Fetch Clients & Create a Map for Fast Lookup
+      // 🔍 Fetch Clients & Map Them by ID
       var clientSnapshot = await _db.collection("clients").get();
       Map<String, dynamic> clientMap = {
         for (var doc in clientSnapshot.docs) doc.id: doc.data()
       };
 
-      // ✅ Fetch Products for Selected Month
+      // 🔍 Fetch Products for the Selected Month (Firestore uses Timestamp)
       var productSnapshot = await _db
           .collection("products")
           .where("serviceDate",
-              isGreaterThanOrEqualTo: firstDate.toIso8601String())
-          .where("serviceDate", isLessThanOrEqualTo: lastDate.toIso8601String())
+              isGreaterThanOrEqualTo: Timestamp.fromDate(firstDate))
+          .where("serviceDate",
+              isLessThanOrEqualTo: Timestamp.fromDate(lastDate))
           .get();
       var products = productSnapshot.docs.map((doc) => doc.data()).toList();
 
@@ -81,10 +78,7 @@ class ExportController extends GetxController {
         String clientId = product['clientId'] ?? "UNKNOWN_ID";
         var client = clientMap[clientId];
 
-        if (client == null) {
-          print("⚠ WARNING: No client found for clientId: $clientId");
-          client = {"name": "Unknown", "phone": "", "address": ""};
-        }
+        client ??= {"name": "Unknown", "phone": "", "address": ""};
 
         sheet.appendRow([
           TextCellValue(client["name"] ?? "Unknown"),
@@ -94,36 +88,22 @@ class ExportController extends GetxController {
           TextCellValue(product["serialNumber"] ?? ""),
           TextCellValue(product["issue"] ?? ""),
           TextCellValue(product["status"] ?? ""),
-          TextCellValue(product["serviceDate"] ?? ""),
+          TextCellValue(
+              (product["serviceDate"] as Timestamp?)?.toDate().toString() ??
+                  ""),
           TextCellValue(product["repairCost"]?.toString() ?? "0"),
         ]);
       }
 
-      // 📤 Save File (Handles Web & Mobile Separately)
-      if (kIsWeb) {
-        var fileBytes = excel.save();
-        final blob = html.Blob([
-          Uint8List.fromList(fileBytes!)
-        ], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute(
-              "download", "Client_Report_${monthNames[month - 1]}_$year.xlsx")
-          ..click();
-        html.Url.revokeObjectUrl(url);
-        Get.snackbar("Success", "Excel file downloaded successfully!");
-      } else {
-        var fileBytes = excel.save();
-        String? outputFile = await FilePicker.platform.saveFile(
-          dialogTitle: 'Save Excel File',
-          fileName: 'Client_Report_${monthNames[month - 1]}_$year.xlsx',
-        );
-
-        if (outputFile != null) {
-          File(outputFile).writeAsBytesSync(fileBytes!);
-          Get.snackbar("Success", "Excel file exported successfully!");
-        }
+      // 📤 Save File (Handles Web & Desktop Separately)
+      var fileBytes = excel.save();
+      if (fileBytes != null) {
+        await saveFile(
+            "Client_Report_${monthNames[selectedMonth.value - 1]}_${selectedYear.value}.xlsx",
+            fileBytes);
       }
+
+      Get.snackbar("Success", "Excel file exported successfully!");
     } catch (e) {
       print("❌ Error exporting data: $e");
       Get.snackbar("Error", "Failed to export data.");
