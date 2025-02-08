@@ -51,7 +51,7 @@ class ExportController extends GetxController {
           .where("serviceDate", isLessThanOrEqualTo: lastDate.toIso8601String())
           .get();
       var products = productSnapshot.docs.map((doc) => doc.data()).toList();
-      print(products);
+      // print(products);
       if (products.isEmpty) {
         Get.snackbar("No Data", "No products found for the selected month.");
         return;
@@ -117,7 +117,7 @@ class ExportController extends GetxController {
         }
       }
     } catch (e) {
-      print("Error exporting data: $e");
+      // print("Error exporting data: $e");
       Get.snackbar("Error", "Failed to export data.");
     } finally {
       isExporting.value = false;

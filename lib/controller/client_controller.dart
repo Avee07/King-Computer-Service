@@ -27,7 +27,12 @@ class ClientController extends GetxController {
       var snapshot = await _db.collection("clients").get();
 
       if (snapshot.docs.isEmpty) {
-        print("⚠ No clients found!");
+        Get.snackbar(
+          "No Clients",
+          "No clients found in the database.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        // print("⚠ No clients found!");
         isLoading.value = false; // ✅ Hide loader
       } else {
         print("✅ Clients fetched: ${snapshot.docs.length}");
@@ -46,7 +51,12 @@ class ClientController extends GetxController {
       // ✅ Update `filteredClients` so UI loads data
       filteredClients.value = List.from(clients);
     } catch (e) {
-      print("❌ Error fetching clients: $e");
+      Get.snackbar(
+        "Error",
+        "Error fetching clients: $e",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      // print("❌ Error fetching clients: $e");
     } finally {
       isLoading.value = false; // ✅ Hide loader
     }
@@ -136,7 +146,12 @@ class ClientController extends GetxController {
           await FlutterLaunch.launchWhatsapp(
               phone: "+91$phone", message: message);
         } catch (e) {
-          print("WhatsApp message failed on Android: $e");
+            Get.snackbar(
+            "Error",
+           "WhatsApp message failed on Android: $e",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          // print("WhatsApp message failed on Android: $e");
         }
       } else if (Platform.isIOS ||
           Platform.isWindows ||
@@ -146,7 +161,12 @@ class ClientController extends GetxController {
         if (await canLaunchUrl(Uri.parse(url))) {
           await launchUrl(Uri.parse(url));
         } else {
-          print("Could not open WhatsApp.");
+          Get.snackbar(
+            "Error",
+            "Could not open WhatsApp.",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          // print("Could not open WhatsApp.");
         }
       }
     } else {
@@ -154,7 +174,12 @@ class ClientController extends GetxController {
       if (await canLaunchUrl(Uri.parse(url))) {
         await launchUrl(Uri.parse(url));
       } else {
-        print("WhatsApp Web could not be opened.");
+        Get.snackbar(
+          "Error",
+          "WhatsApp Web could not be opened.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        // print("WhatsApp Web could not be opened.");
       }
     }
   }

@@ -98,7 +98,12 @@ class ProductController extends GetxController {
           await FlutterLaunch.launchWhatsapp(
               phone: "+91$phone", message: message);
         } catch (e) {
-          print("WhatsApp message failed on Android: $e");
+          Get.snackbar(
+            "Error",
+            "WhatsApp message failed on Android: $e",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          // print("WhatsApp message failed on Android: $e");
         }
       } else if (Platform.isIOS ||
           Platform.isWindows ||
@@ -108,7 +113,12 @@ class ProductController extends GetxController {
         if (await canLaunchUrl(Uri.parse(url))) {
           await launchUrl(Uri.parse(url));
         } else {
-          print("Could not open WhatsApp.");
+          Get.snackbar(
+            "Error",
+            "Could not open WhatsApp.",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          // print("Could not open WhatsApp.");
         }
       }
     } else {
@@ -116,7 +126,12 @@ class ProductController extends GetxController {
       if (await canLaunchUrl(Uri.parse(url))) {
         await launchUrl(Uri.parse(url));
       } else {
-        print("WhatsApp Web could not be opened.");
+        Get.snackbar(
+          "Error",
+          "WhatsApp Web could not be opened.",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        // print("WhatsApp Web could not be opened.");
       }
     }
   }
