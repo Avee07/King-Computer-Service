@@ -28,6 +28,7 @@ class ClientController extends GetxController {
 
       if (snapshot.docs.isEmpty) {
         print("⚠ No clients found!");
+        isLoading.value = false; // ✅ Hide loader
       } else {
         print("✅ Clients fetched: ${snapshot.docs.length}");
       }
@@ -116,9 +117,9 @@ class ClientController extends GetxController {
   // Function to Send WhatsApp Message
   Future<void> sendWhatsAppMessage(
       String phone, String name, String model, String serialNumber) async {
-    String businessName = "King Computer Services (Printer Service Center)";
+    String businessName = "King Computer Services";
     String address =
-        "Address: 2nd floor, Anuvrat Plaza, C4/A, Phool Chowk Main Rd, near Hotel Venkatesh, Jorapara, Nayapara, Raipur, Chhattisgarh 492001";
+        "Address: 2nd floor, Anuvrat Plaza, C4/A, Phool Chowk Main Rd, near Hotel Venkatesh, Nayapara, Raipur, Chhattisgarh 492001";
     String contact = "Phone: 093025 07090";
     String date =
         DateTime.now().toLocal().toString().split(' ')[0]; // Today's Date

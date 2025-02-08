@@ -10,7 +10,7 @@ import 'dart:html' as html;
 class ExportController extends GetxController {
   var selectedMonth = DateTime.now().month.obs;
   var selectedYear = DateTime.now().year.obs;
-  var isExporting = false.obs; // ✅ Loading state
+  var isExporting = false.obs;
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   List<String> monthNames = [
@@ -35,22 +35,27 @@ class ExportController extends GetxController {
       int month = selectedMonth.value;
       int year = selectedYear.value;
 
-      // 🔍 Fetch Clients
+      // 🔍 Get first and last date of selected month
+      DateTime firstDate = DateTime(year, month, 1);
+      DateTime lastDate = DateTime(year, month + 1, 0); // Last day of month
+
+      // 🔍 Fetch latest Clients
       var clientSnapshot = await _db.collection("clients").get();
       var clients = clientSnapshot.docs.map((doc) => doc.data()).toList();
 
-      // 🔍 Fetch Products for the selected month
+      // 🔍 Fetch latest Products within the selected month (including today)
       var productSnapshot = await _db
           .collection("products")
           .where("serviceDate",
-              isGreaterThanOrEqualTo:
-                  "$year-${month.toString().padLeft(2, '0')}-01")
-          .where("serviceDate",
-              isLessThanOrEqualTo:
-                  "$year-${month.toString().padLeft(2, '0')}-31")
+              isGreaterThanOrEqualTo: firstDate.toIso8601String())
+          .where("serviceDate", isLessThanOrEqualTo: lastDate.toIso8601String())
           .get();
       var products = productSnapshot.docs.map((doc) => doc.data()).toList();
-
+      print(products);
+      if (products.isEmpty) {
+        Get.snackbar("No Data", "No products found for the selected month.");
+        return;
+      }
       // 📊 Create Excel
       var excel = Excel.createExcel();
       Sheet sheet = excel['Client Data'];
@@ -115,7 +120,7 @@ class ExportController extends GetxController {
       print("Error exporting data: $e");
       Get.snackbar("Error", "Failed to export data.");
     } finally {
-      isExporting.value = false; // ✅ Reset loading state
+      isExporting.value = false;
     }
   }
 }

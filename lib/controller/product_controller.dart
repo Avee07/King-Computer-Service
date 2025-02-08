@@ -77,9 +77,9 @@ class ProductController extends GetxController {
   // 📌 Send WhatsApp Message
   Future<void> sendRepairWhatsAppMessage(
       String phone, String model, double repairCost) async {
-    String businessName = "King Computer Services (Printer Service Center)";
+    String businessName = "King Computer Services ";
     String address =
-        "Address: 2nd floor, Anuvrat Plaza, C4/A, Phool Chowk Main Rd, near Hotel Venkatesh, Jorapara, Nayapara, Raipur, Chhattisgarh 492001";
+        "Address: 2nd floor, Anuvrat Plaza, C4/A, Phool Chowk Main Rd, near Hotel Venkatesh, Nayapara, Raipur, Chhattisgarh 492001";
     String contact = "Phone: 093025 07090";
 
     String feedbackLink =
@@ -87,7 +87,7 @@ class ProductController extends GetxController {
         "Post a review to our profile: https://g.page/r/Cc7L4S2Ar1H4EBE/review";
     String message = "$businessName\n\n$address\n\n$contact\n\n"
         "Hello ,\nYour product ($model) has been repaired.\n"
-        "Repair Cost: ₹$repairCost..\n\nThank you!\n\n$feedbackLink";
+        "\n\nThank you!\n\n$feedbackLink";
 
     String url = "https://wa.me/$phone?text=${Uri.encodeComponent(message)}";
 
