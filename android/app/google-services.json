@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "819021649732",
+    "project_id": "king-service-dfa96",
+    "storage_bucket": "king-service-dfa96.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819021649732:android:71e61ac5b37080041aa911",
+        "android_client_info": {
+          "package_name": "com.example.client_details_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCG3-GdnY8GNqmmd1DGvBAAJ3EaslwCe9g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
