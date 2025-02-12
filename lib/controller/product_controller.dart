@@ -28,10 +28,24 @@ class ProductController extends GetxController {
           'issue': data['issue'] ?? '',
           'status': data['status'] ?? 'Registered',
           'repairCost': data['repairCost'] ?? 0,
+          'serviceDate': data['serviceDate'] ?? '',
+          'serviceClosureDate': data['serviceClosureDate'] ?? '',
         });
       }).toList();
     } catch (e) {
       print("Error fetching products: $e");
+    }
+  }
+
+  // ✅ Delete Product from Firestore & UI
+  Future<void> deleteProduct(Product product) async {
+    try {
+      await _db.collection("products").doc(product.id).delete();
+      products.removeWhere((p) => p.id == product.id); // ✅ Remove from UI
+      Get.snackbar("Success", "Product deleted successfully!");
+    } catch (e) {
+      print("❌ Error deleting product: $e");
+      Get.snackbar("Error", "Failed to delete product.");
     }
   }
 
@@ -54,17 +68,23 @@ class ProductController extends GetxController {
   }
 
   // 📌 Update Product Status & Repair Cost
+// 📌 Update Product Status & Repair Cost
   Future<void> markAsRepaired(
       Product product, double repairCost, String phoneNumber) async {
     try {
+      DateTime closureDate = DateTime.now();
+
       await _db.collection("products").doc(product.id).update({
         "status": "Repaired",
         "repairCost": repairCost,
+        "serviceClosureDate":
+            closureDate.toIso8601String(), // ✅ Store closure date
       });
 
       // ✅ Update local list
       product.status = "Repaired";
       product.repairCost = repairCost;
+      product.serviceClosureDate = closureDate; // ✅ Update locally
       products.refresh();
 
       // ✅ Send WhatsApp Notification
