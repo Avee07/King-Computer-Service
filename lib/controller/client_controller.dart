@@ -90,7 +90,34 @@ class ClientController extends GetxController {
     filteredClients.value = {...nameFiltered, ...serialFiltered}.toList();
   }
 
-  // Add Client & Product Together and Send WhatsApp Message
+  // Update Client-Details to Firestore
+Future<void> updateClientDetails(
+    String clientId, String name, String phone, String address) async {
+  try {
+    await _db.collection("clients").doc(clientId).update({
+      "name": name,
+      "phone": phone,
+      "address": address,
+    });
+
+    // ✅ Update the local list
+    var index = clients.indexWhere((c) => c.id == clientId);
+    if (index != -1) {
+      clients[index] = clients[index].copyWith(
+        name: name,
+        phone: phone,
+        address: address,
+      );
+      clients.refresh();
+    }
+
+    Get.snackbar("Success", "Client details updated successfully!");
+  } catch (e) {
+    print("❌ Error updating client details: $e");
+    Get.snackbar("Error", "Failed to update client details.");
+  }
+}
+
   // Add Client & Product Together and Send WhatsApp Message
   Future<void> addClientWithProduct(String name, String phone, String address,
       String serialNumber, String model, String issue, String status) async {

@@ -1,18 +1,36 @@
+import 'package:client_details_app/controller/auth_controller.dart'
+    show AuthController;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../controller/auto_export_controller.dart';
+import 'admin/admin_screen.dart';
 import 'client_screen.dart';
 import '../controller/client_controller.dart';
 import 'export_data_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final ClientController clientController = Get.put(ClientController());
+  final AuthController authController = Get.find<AuthController>();
+  final AutoExportController autoexportController = AutoExportController();
 
   HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final User? user = auth.currentUser;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("King Computer Service Manager")),
+      appBar: AppBar(
+        title: const Text("King Computer Service Manager"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => authController.logoutUser(),
+          )
+        ],
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           double buttonSize = constraints.maxWidth > 600
@@ -25,25 +43,62 @@ class HomeScreen extends StatelessWidget {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-              child: Wrap(
-                spacing: spacing, // Space between buttons horizontally
-                runSpacing: spacing, // Space between buttons vertically
-                alignment: WrapAlignment.center,
+              child: Column(
                 children: [
-                  _buildSquareButton(
-                      "Register Here", Icons.add, Colors.blue, buttonSize, () {
-                    _showAddClientDialog(context);
-                  }),
-                  _buildSquareButton(
-                      "Manage Clients", Icons.people, Colors.green, buttonSize,
-                      () {
-                    Get.to(() => ClientScreen());
-                  }),
-                  _buildSquareButton(
-                      "Export Data", Icons.download, Colors.orange, buttonSize,
-                      () {
-                    Get.to(() => ExportDataScreen());
-                  }),
+                  if (user != null && user.email == "admin@kcs.com")
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Get.to(() => AdminPermissionsScreen());
+                      },
+                      icon: Icon(Icons.admin_panel_settings,
+                          size: 28, color: Colors.white),
+                      label: Text("Admin Panel",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  SizedBox(height: 100),
+                  Wrap(
+                    spacing: spacing, // Space between buttons horizontally
+                    runSpacing: spacing, // Space between buttons vertically
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildSquareButton(
+                          "Register Here", Icons.add, Colors.blue, buttonSize,
+                          () {
+                        _showAddClientDialog(context);
+                      }),
+                      _buildSquareButton("Manage Clients", Icons.people,
+                          Colors.green, buttonSize, () {
+                        Get.to(() => ClientScreen());
+                      }),
+                      if (user != null && user.email == "admin@kcs.com")
+                        _buildSquareButton("Export Data", Icons.download,
+                            Colors.orange, buttonSize, () {
+                          Get.to(() => ExportDataScreen());
+                        }),
+                      // ElevatedButton(
+                      //   onPressed: () {
+                      //     AutoExportController().exportAndUpload(2, 2025);
+                      //     Get.snackbar(
+                      //         "Export", "Export started for February 2025!");
+                      //     // () async {
+                      //     //   int month = DateTime.now().month; // Use current month
+                      //     //   int year = DateTime.now().year; // Use current year
+                      //     //   await autoexportController.exportAndUpload(month, year);
+                      //     //   Get.snackbar(
+                      //     //       "✅ Success", "Manual export & upload completed.");
+                      //   },
+                      //   child: const Text("Trigger Export & Upload"),
+                      // ),
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Product {
   String id;
   String clientId;
@@ -5,8 +7,9 @@ class Product {
   String model;
   String issue;
   String status;
+  double? repairCost;
   DateTime serviceDate;
-  double? repairCost; // ✅ New field for repair cost
+  DateTime? serviceClosureDate;
 
   Product({
     required this.id,
@@ -15,11 +18,12 @@ class Product {
     required this.model,
     required this.issue,
     required this.status,
+    this.repairCost,
     required this.serviceDate,
-    this.repairCost, // ✅ Nullable repair cost
+    this.serviceClosureDate,
   });
 
-  // 🔹 Convert to JSON
+  // ✅ Convert to JSON
   Map<String, dynamic> toJson() => {
         'id': id,
         'clientId': clientId,
@@ -27,25 +31,35 @@ class Product {
         'model': model,
         'issue': issue,
         'status': status,
+        'repairCost': repairCost ?? 0,
         'serviceDate': serviceDate.toIso8601String(),
-        'repairCost': repairCost, // ✅ Save repair cost
+        'serviceClosureDate': serviceClosureDate?.toIso8601String(),
       };
 
-  // 🔹 Convert from JSON (Handles null values)
+  // ✅ Handle Different Date Formats
   factory Product.fromJson(Map<String, dynamic> json) {
+    DateTime parseDate(dynamic date) {
+      if (date is Timestamp) {
+        return date.toDate();
+      } else if (date is String) {
+        return DateTime.tryParse(date) ?? DateTime.now();
+      } else {
+        return DateTime.now();
+      }
+    }
+
     return Product(
-      id: json['id'] ?? '',
-      clientId: json['clientId'] ?? '',
-      serialNumber: json['serialNumber'] ?? '',
-      model: json['model'] ?? '',
-      issue: json['issue'] ?? '',
-      status: json['status'] ?? 'Registered',
-      serviceDate: json['serviceDate'] != null
-          ? DateTime.parse(json['serviceDate'])
-          : DateTime.now(),
-      repairCost: json['repairCost'] != null
-          ? double.tryParse(json['repairCost'].toString())
-          : null, // ✅ Handle repair cost as nullable
+      id: json['id'],
+      clientId: json['clientId'],
+      serialNumber: json['serialNumber'],
+      model: json['model'],
+      issue: json['issue'],
+      status: json['status'],
+      repairCost: (json['repairCost'] ?? 0).toDouble(),
+      serviceDate: parseDate(json['serviceDate']),
+      serviceClosureDate: json['serviceClosureDate'] != null
+          ? parseDate(json['serviceClosureDate'])
+          : null,
     );
   }
 }

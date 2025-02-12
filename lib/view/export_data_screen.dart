@@ -76,10 +76,12 @@ class ExportDataScreen extends StatelessWidget {
                             ),
                           )
                         : const Icon(Icons.file_download),
-                    label: Text(
-                        exportController.isExporting.value ? "Exporting..." : "Export to Excel"),
+                    label: Text(exportController.isExporting.value
+                        ? "Exporting..."
+                        : "Export to Excel"),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 20),
                       textStyle: const TextStyle(fontSize: 16),
                     ),
                   ),
@@ -101,7 +103,8 @@ class ExportDataScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        Text(label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),

@@ -11,21 +11,33 @@ class Client {
     required this.address,
   });
 
-  // 📌 Convert from JSON (Handles null values)
+  // ✅ Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'phone': phone,
+      'address': address,
+    };
+  }
+
+  // ✅ Convert from JSON
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
       id: json['id'] ?? '',
-      name: json['name'] ?? 'Unknown Name', // ✅ Default value if null
-      phone: json['phone'] ?? 'Unknown Phone', // ✅ Default value if null
-      address: json['address'] ?? 'Unknown Address', // ✅ Default value if null
+      name: json['name'] ?? 'Unknown',
+      phone: json['phone'] ?? '',
+      address: json['address'] ?? '',
     );
   }
 
-  // 📌 Convert to JSON
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'phone': phone,
-        'address': address,
-      };
+  // ✅ Add `copyWith` Method
+  Client copyWith({String? name, String? phone, String? address}) {
+    return Client(
+      id: id, // Keep ID same
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+    );
+  }
 }
