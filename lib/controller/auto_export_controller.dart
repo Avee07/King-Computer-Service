@@ -1,12 +1,9 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html;
-import 'package:flutter/services.dart' show rootBundle;
 import 'drive_upload_controller.dart';
 
 class AutoExportController {
@@ -105,7 +102,7 @@ class AutoExportController {
   Future<void> _exportForDesktopOrMobile(
       Excel excel, int month, int year) async {
     Directory? directory;
-
+    Uint8List fileBytes = Uint8List.fromList(excel.save()!);
     if (Platform.isAndroid || Platform.isIOS) {
       directory = await getExternalStorageDirectory(); // Mobile Storage
     } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
@@ -123,6 +120,7 @@ class AutoExportController {
     print("✅ File saved successfully at: $filePath");
 
     // ✅ Upload to Google Drive
-    // await DriveUploadController().uploadToDrive(file);
+    await DriveUploadController().uploadToDrive(fileBytes,
+        "Client_Report_${DateTime.now().month}_${DateTime.now().year}.xlsx");
   }
 }
